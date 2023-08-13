@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "blizzardCrawler.cli", "blizzardCrawler.cli\blizzardCrawler.cli.csproj", "{F15456B4-97C2-492F-9737-0FBFC7945F51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "blizzardCrawler.db", "blizzardCrawler.db\blizzardCrawler.db.csproj", "{7C38D1CD-53F8-47D5-9654-BBCADD9C23B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "blizzardCrawler.shared", "blizzardCrawler.shared\blizzardCrawler.shared.csproj", "{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "blizzardCrawler.services", "blizzardCrawler.services\blizzardCrawler.services.csproj", "{3CF6E551-D50E-4E04-9176-D4411BB18D90}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F15456B4-97C2-492F-9737-0FBFC7945F51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F15456B4-97C2-492F-9737-0FBFC7945F51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F15456B4-97C2-492F-9737-0FBFC7945F51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F15456B4-97C2-492F-9737-0FBFC7945F51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C38D1CD-53F8-47D5-9654-BBCADD9C23B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C38D1CD-53F8-47D5-9654-BBCADD9C23B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C38D1CD-53F8-47D5-9654-BBCADD9C23B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C38D1CD-53F8-47D5-9654-BBCADD9C23B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CF6E551-D50E-4E04-9176-D4411BB18D90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CF6E551-D50E-4E04-9176-D4411BB18D90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CF6E551-D50E-4E04-9176-D4411BB18D90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CF6E551-D50E-4E04-9176-D4411BB18D90}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
