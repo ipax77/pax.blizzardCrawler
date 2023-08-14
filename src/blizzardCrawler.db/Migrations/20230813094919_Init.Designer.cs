@@ -10,7 +10,7 @@ using blizzardCrawler.db;
 namespace blizzardCrawler.db.Migrations
 {
     [DbContext(typeof(BlContext))]
-    [Migration("20230811124336_Init")]
+    [Migration("20230813094919_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -54,6 +54,10 @@ namespace blizzardCrawler.db.Migrations
                     b.Property<int>("PlayerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    b.Property<string>("Etag")
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)");
 
                     b.Property<string>("Name")
                         .IsRequired()

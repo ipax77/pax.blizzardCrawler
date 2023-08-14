@@ -49,7 +49,7 @@ public class TokenBucket
 
     public void ReAddTokenAfterServiceUnavailable()
     {
-        _tokens.Add(new Token());
+        _tokens.TryAdd(new Token());
     }
 }
 

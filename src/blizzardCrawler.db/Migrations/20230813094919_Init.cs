@@ -24,7 +24,9 @@ namespace blizzardCrawler.db.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     ToonId = table.Column<int>(type: "int", nullable: false),
                     RegionId = table.Column<int>(type: "int", nullable: false),
-                    RealmId = table.Column<int>(type: "int", nullable: false)
+                    RealmId = table.Column<int>(type: "int", nullable: false),
+                    Etag = table.Column<string>(type: "varchar(40)", maxLength: 40, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {

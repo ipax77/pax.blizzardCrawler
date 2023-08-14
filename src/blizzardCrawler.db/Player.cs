@@ -16,5 +16,7 @@ public class Player
 
     public int RegionId { get; set; }
     public int RealmId { get; set; }
+    [MaxLength(40)]
+    public string? Etag { get; set; }
     public virtual ICollection<MatchInfo> MatchInfos { get; set; }
 }

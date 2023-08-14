@@ -8,10 +8,11 @@ using MySqlConnector;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace blizzardCrawler.services;
 
-public class PlayerRepository
+public partial class PlayerRepository
 {
     private readonly IOptions<DbImportOptions> importOptions;
     private readonly IServiceScopeFactory scopeFactory;
@@ -25,6 +26,10 @@ public class PlayerRepository
     }
 
     private ConcurrentDictionary<PlayerIndex, PlayerCrawlInfo> playersStore = new();
+    private static readonly Regex etagRegex = EtagRegex();
+
+    [GeneratedRegex(@"""(.*?)""")]
+    private static partial Regex EtagRegex();
 
     public string? GetPlayerEtag(PlayerIndex player)
     {
@@ -34,6 +39,16 @@ public class PlayerRepository
             return info.Etag;
         }
         return null;
+    }
+
+    public string GetPlayerInsertEtag(PlayerIndex player)
+    {
+        if (playersStore.TryGetValue(player, out PlayerCrawlInfo? info)
+            && info is not null)
+        {
+            return $"'{info.Etag}'";
+        }
+        return "NULL";
     }
 
     public int GetPlayer503s(PlayerIndex player)
@@ -67,8 +82,8 @@ public class PlayerRepository
         {
             var currentBatch = players.Skip(i * batchSize).Take(batchSize);
             var insertStatement = new StringBuilder();
-            insertStatement.AppendLine($"INSERT IGNORE INTO {nameof(BlContext.Players)} ({nameof(Player.Name)}, {nameof(Player.ToonId)}, {nameof(Player.RegionId)}, {nameof(Player.RealmId)}) VALUES");
-            insertStatement.Append(string.Join($",{Environment.NewLine}", currentBatch.Select(s => $"('',{s.ToonId},{s.RegionId},{s.RealmId})")));
+            insertStatement.AppendLine($"INSERT IGNORE INTO {nameof(BlContext.Players)} ({nameof(Player.Name)}, {nameof(Player.ToonId)}, {nameof(Player.RegionId)}, {nameof(Player.RealmId)}, {nameof(Player.Etag)}) VALUES");
+            insertStatement.Append(string.Join($",{Environment.NewLine}", currentBatch.Select(s => $"('',{s.ToonId},{s.RegionId},{s.RealmId},{GetPlayerInsertEtag(s)})")));
             command.CommandText = insertStatement.ToString();
             command.CommandTimeout = 120;
             await command.ExecuteNonQueryAsync();
@@ -128,7 +143,7 @@ public class PlayerRepository
             }
             info.CrawlStatusCodes.Enqueue(statusCode);
             info.LatestCrawlStatusCode = statusCode;
-            info.Etag = etag;
+            info.Etag = ExtractEtag(etag);
         }
     }
 
@@ -136,7 +151,8 @@ public class PlayerRepository
     {
         if (playersStore.Count == 0)
         {
-            var players = await GetPlayersFromArcade();
+            // var players = await GetPlayersFromArcade();
+            var players = GetPlayersFromCsv();
 
             foreach (var player in players)
             {
@@ -197,7 +213,8 @@ public class PlayerRepository
 
     private List<PlayerIndex> GetPlayersFromCsv()
     {
-        using var reader = new StreamReader("/data/ds/players.csv");
+        // /data/ds/players_test.csv"
+        using var reader = new StreamReader("/data/ds/players_test.csv");
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
         var records = csv.GetRecords<CsvPlayer>();
         return records.Select(s => new PlayerIndex(s.ToonId, s.RegionId, s.RealmId)).ToList();
@@ -227,7 +244,7 @@ public class PlayerRepository
             //    .ToList();
 
             StringBuilder sb = new();
-            sb.AppendLine($"retry count: {retryCount}");
+            sb.AppendLine($"retry queue: {retryCount}");
             sb.Append(string.Join(Environment.NewLine, crawlStatusCounts.Select(s => $"StatusCode: {s.CrawlStatusCode} - {s.Count}")));
             if (lastTimesBetweenCrawls.Count > 0)
             {
@@ -236,9 +253,9 @@ public class PlayerRepository
                 var minTime = lastTimesBetweenCrawls.Min();
                 var avgTime = TimeSpan.FromTicks((long)lastTimesBetweenCrawls.Average(a => a.Ticks));
                 sb.AppendLine($"Times between crawls:");
-                sb.AppendLine($"\tMax: {maxTime.ToString(@"HH\:mm\:ss")}");
-                sb.AppendLine($"\tMin: {minTime.ToString(@"HH\:mm\:ss")}");
-                sb.AppendLine($"\tAvg: {avgTime.ToString(@"HH\:mm\:ss")}");
+                sb.AppendLine($"\tMax: {maxTime.ToString(@"hh\:mm\:ss")}");
+                sb.AppendLine($"\tMin: {minTime.ToString(@"hh\:mm\:ss")}");
+                sb.AppendLine($"\tAvg: {avgTime.ToString(@"hh\:mm\:ss")}");
             }
             //if (alwaysFailed.Count > 0)
             //{
@@ -251,6 +268,31 @@ public class PlayerRepository
             File.AppendAllText(importOptions.Value.LogFile, sb.ToString());
         }
     }
+
+    private static string? ExtractEtag(string? etagString)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(etagString))
+            {
+                return null;
+            }
+
+            Match match = EtagRegex().Match(etagString);
+            if (match.Success && match.Groups.Count > 1)
+            {
+                return match.Groups[1].Value;
+            }
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("ExtractEtag error: {error}", ex.Message);
+        }
+        return null;
+    }
+
+
 }
 
 internal class PlayerCrawlInfo

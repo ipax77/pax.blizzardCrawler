@@ -52,6 +52,10 @@ namespace blizzardCrawler.db.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<string>("Etag")
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(30)

@@ -17,6 +17,12 @@ public partial class CrawlerService
         _ = ConsumeRetryChannel(token);
     }
 
+    private void WritePlayer(PlayerIndex player, string? etag, CancellationToken token)
+    {
+        retryChannel.Writer.TryWrite(new(player, etag));
+        _ = ConsumeRetryChannel(token);
+    }
+
     private async Task ConsumeRetryChannel(CancellationToken token)
     {
         lock (retrylockobject)
@@ -56,18 +62,24 @@ public partial class CrawlerService
             {
                 var statusCode = await HandlePlayer(playerRetry.GetPlayerIndex(),
                                                     playerRetry.Etag,
+                                                    true,
                                                     playerRepository,
                                                     matchRepository,
                                                     token);
+                
+                int retries = playerRepository.GetPlayer503s(playerRetry.GetPlayerIndex());
                 if (statusCode == 200 || statusCode == 304)
                 {
-                    int retries = playerRepository.GetPlayer503s(playerRetry.GetPlayerIndex());
                     logger.LogDebug("player succeeded after {count} attempts.", retries);
+                }
+                else if (retries > 10)
+                {
+                    logger.LogWarning("player still failing after {count} attempts.", retries);
                 }
             }
             else
             {
-                await Task.Delay(TimeSpan.FromSeconds(1), token);
+                await Task.Delay(1000, token);
             }
         }
     }

@@ -44,7 +44,7 @@ class Program
 
         services.AddLogging(options =>
         {
-            options.SetMinimumLevel(LogLevel.Information);
+            options.SetMinimumLevel(LogLevel.Debug);
             options.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
             options.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Information);
             options.AddConsole();
@@ -59,17 +59,7 @@ class Program
             });
         });
 
-        services.AddHttpClient("blizzardEU", x =>
-        {
-            x.BaseAddress = new Uri("https://eu.api.blizzard.com");
-            x.DefaultRequestHeaders.Add("Accept", "application/json");
-        });
-
-        services.AddHttpClient("blizzardUS", x =>
-        {
-            x.BaseAddress = new Uri("https://us.api.blizzard.com");
-            x.DefaultRequestHeaders.Add("Accept", "application/json");
-        });
+        services.AddHttpClient();
 
         services.AddMemoryCache();
         services.AddSingleton<PlayerRepository>();
@@ -90,9 +80,27 @@ class Program
         //logger.LogInformation("Replays: {count}", count);
 
         var crawlerService = scope.ServiceProvider.GetRequiredService<CrawlerService>();
-        crawlerService.StartJob();
 
+        CancellationTokenSource cts = new();
+        Console.CancelKeyPress += (sender, e) =>
+        {
+            e.Cancel = true; // Prevent the application from immediately exiting
+            cts.Cancel();     // Cancel the token source
+            Console.WriteLine("CTRL-C detected. Cancelling the operation...");
+        };
+
+        crawlerService.StartJob(cts.Token);
+
+        //crawlerService.GetPlayerMatchInfos(new()
+        //{
+        //    ToonId = 10188255,
+        //    RegionId = 1,
+        //    RealmId = 1
+        //}, "90d-igkzL1g6rMQ3OO/0qho0au8+Bh8").GetAwaiter().GetResult();
+
+        Console.WriteLine("Press Enter to exit.");
         Console.ReadLine();
+        cts.Cancel();
     }
 
     private static void CheckDate(BlContext context)
