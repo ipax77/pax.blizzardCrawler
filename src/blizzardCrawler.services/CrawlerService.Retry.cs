@@ -67,15 +67,15 @@ public partial class CrawlerService
                                                     matchRepository,
                                                     token);
                 
-                int retries = playerRepository.GetPlayer503s(playerRetry.GetPlayerIndex());
-                if (statusCode == 200 || statusCode == 304)
-                {
-                    logger.LogDebug("player succeeded after {count} attempts.", retries);
-                }
-                else if (retries > 10)
-                {
-                    logger.LogWarning("player still failing after {count} attempts.", retries);
-                }
+                //int retries = playerRepository.GetPlayer503s(playerRetry.GetPlayerIndex());
+                //if (statusCode == 200 || statusCode == 304)
+                //{
+                //    logger.LogDebug("player succeeded after {count} attempts.", retries);
+                //}
+                //else if (retries > 10)
+                //{
+                //    logger.LogWarning("player still failing after {count} attempts.", retries);
+                //}
             }
             else
             {

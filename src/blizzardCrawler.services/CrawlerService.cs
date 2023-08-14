@@ -124,11 +124,9 @@ public partial class CrawlerService
         playerRepository.SetCrawlInfo(player, GetLatestMatchDate(matches), newEtag, statusCode);
         matchRepository.StorePlayerMatches(player, matches);
 
-        logger.LogDebug("Got status code {statusCode}", statusCode);
-        if (statusCode == 503)
+        //logger.LogDebug("Got status code {statusCode}", statusCode);
+        if (statusCode == 503) // service unavailable
         {
-            tokenBucketHour.ReAddTokenAfterServiceUnavailable();
-            tokenBucketSeconds.ReAddTokenAfterServiceUnavailable();
             RetryPlayer(player, etag, token);
         }
         else if (statusCode == 701) // timeout

@@ -88,6 +88,7 @@ public partial class PlayerRepository
             command.CommandTimeout = 120;
             await command.ExecuteNonQueryAsync();
         }
+
         await transaction.CommitAsync();
 
         using var scope = scopeFactory.CreateScope();
@@ -151,8 +152,8 @@ public partial class PlayerRepository
     {
         if (playersStore.Count == 0)
         {
-            // var players = await GetPlayersFromArcade();
-            var players = GetPlayersFromCsv();
+            var players = await GetPlayersFromArcade();
+            // var players = GetPlayersFromCsv();
 
             foreach (var player in players)
             {
@@ -271,28 +272,18 @@ public partial class PlayerRepository
 
     private static string? ExtractEtag(string? etagString)
     {
-        try
+        if (string.IsNullOrEmpty(etagString))
         {
-            if (string.IsNullOrEmpty(etagString))
-            {
-                return null;
-            }
-
-            Match match = EtagRegex().Match(etagString);
-            if (match.Success && match.Groups.Count > 1)
-            {
-                return match.Groups[1].Value;
-            }
             return null;
         }
-        catch (Exception ex)
+
+        Match match = EtagRegex().Match(etagString);
+        if (match.Success && match.Groups.Count > 1)
         {
-            Console.WriteLine("ExtractEtag error: {error}", ex.Message);
+            return match.Groups[1].Value;
         }
         return null;
     }
-
-
 }
 
 internal class PlayerCrawlInfo

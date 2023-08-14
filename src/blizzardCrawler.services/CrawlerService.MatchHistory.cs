@@ -8,7 +8,7 @@ namespace blizzardCrawler.services;
 
 public partial class CrawlerService
 {
-    private static string mapName = "Direct Strike";
+    private static readonly string mapName = "Direct Strike";
     private readonly TimeSpan _requestTimeout = TimeSpan.FromSeconds(10);
 
     private async Task<(List<BlMatch>, int, string?)> GetMatchHistory(PlayerIndex player,
@@ -97,7 +97,7 @@ public partial class CrawlerService
         }
         catch (Exception ex)
         {
-            logger.LogError("failed getting matchinfo: {error}", ex.Message);
+             logger.LogError("failed getting matchinfo: {error}", ex.Message);
             return (new(), 799, null);
         }
         finally
