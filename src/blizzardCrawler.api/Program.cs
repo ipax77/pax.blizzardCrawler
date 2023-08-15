@@ -1,8 +1,11 @@
+using blizzardCrawler.crawl;
 using blizzardCrawler.crawl.Crawler;
 using blizzardCrawler.db;
 using blizzardCrawler.shared;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
+int j = 0;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("/data/localserverconfig.json", optional: true, reloadOnChange: false);
@@ -42,7 +45,7 @@ builder.Services.AddDbContext<BlContext>(options =>
 
 builder.Services.AddMemoryCache();
 
-builder.Services.AddSingleton<CrawlerService>();
+builder.Services.AddTransient<ICrawlerService, CrawlerService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -55,14 +58,23 @@ CancellationTokenSource cts = new();
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
-    var crawlerService = scope.ServiceProvider.GetRequiredService<CrawlerService>();
+    var crawlerService1 = scope.ServiceProvider.GetRequiredService<ICrawlerService>();
+    var crawlerService2 = scope.ServiceProvider.GetRequiredService<ICrawlerService>();
+    var apiOptions = scope.ServiceProvider.GetRequiredService<IOptions<BlizzardAPIOptions>>();
 
     List<PlayerEtagIndex> players = new List<PlayerEtagIndex>();
     for (int i = 0; i < 10000; i++)
     {
         players.Add(new() { ToonId = 1, RegionId = 1, RealmId = 1, Etag = null, LatestMatchInfo = null });
     }
-    crawlerService.StartJob(players, cts.Token);
+    TokenBucket tbSecond = new(apiOptions.Value.MaxRequestsPerSecond, 1000, 3000);
+    TokenBucket tbHour = new(apiOptions.Value.MaxRequestsPerHour, 3600000, 60000);
+
+    crawlerService1.MatchInfoReady += HandleIt;
+    crawlerService2.MatchInfoReady += HandleIt;
+
+    crawlerService1.StartJob(players.Take(1000).ToList(), apiOptions.Value, tbSecond, tbHour, cts.Token);
+    crawlerService2.StartJob(players.Skip(2000).Take(2000).ToList(), apiOptions.Value, tbSecond, tbHour, cts.Token);
 
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -75,3 +87,12 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+void HandleIt(object? sender, MatchInfoEventArgs e)
+{
+    Interlocked.Increment(ref j);
+    if (j % 100 == 0)
+    {
+        Console.WriteLine($"j: {j}");
+    }
+}

@@ -9,7 +9,17 @@ public partial class CrawlerService
 {
     private Channel<PlayerEtagIndex> mainChannel = Channel.CreateUnbounded<PlayerEtagIndex>();
     private ConcurrentBag<CancellationTokenSource> mainConsumers = new();
-    public void AddPlayers(List<PlayerEtagIndex> players)
+
+    public bool AddPlayer(PlayerEtagIndex player)
+    {
+        if (!started)
+        {
+            return false;
+        }
+        return mainChannel.Writer.TryWrite(player);
+    }
+
+    private void AddPlayers(List<PlayerEtagIndex> players)
     {
         foreach (var player in players.OrderByDescending(o => o.LatestMatchInfo))
         { 
@@ -17,14 +27,9 @@ public partial class CrawlerService
         }
     }
 
-    public void AddPlayer(PlayerEtagIndex player)
-    {
-        mainChannel.Writer.TryWrite(player);
-    }
-
     private void CreateMainChannelConsumers()
     {
-        for (int i = 0; i < MaxHttpThreads; i++)
+        for (int i = 0; i < apiOptions.CrawlerThreadsCount; i++)
         {
             AddMainChannelConsumer();
         }
@@ -42,7 +47,7 @@ public partial class CrawlerService
 
     private void AddMainChannelConsumer()
     {
-        if (mainConsumers.Count < MaxHttpThreads)
+        if (mainConsumers.Count < apiOptions.CrawlerThreadsCount)
         {
             CancellationTokenSource cts = new();
             mainConsumers.Add(cts);

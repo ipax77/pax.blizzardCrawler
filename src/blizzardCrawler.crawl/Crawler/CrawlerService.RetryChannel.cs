@@ -9,7 +9,7 @@ public partial class CrawlerService
     private Channel<PlayerEtagIndex> retryChannel = Channel.CreateUnbounded<PlayerEtagIndex>();
     private ConcurrentBag<CancellationTokenSource> retryConsumers = new();
 
-    public void AddRetryPlayer(PlayerEtagIndex player)
+    private void AddRetryPlayer(PlayerEtagIndex player)
     {
         retryChannel.Writer.TryWrite(player);
     }
@@ -31,7 +31,7 @@ public partial class CrawlerService
 
     private void AddRetryChannelConsumer()
     {
-        if (retryConsumers.Count < MaxHttpThreads)
+        if (retryConsumers.Count < apiOptions.CrawlerThreadsCount)
         {
             CancellationTokenSource cts = new();
             retryConsumers.Add(cts);

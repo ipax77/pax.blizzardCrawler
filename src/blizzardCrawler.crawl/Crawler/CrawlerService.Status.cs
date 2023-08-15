@@ -11,15 +11,7 @@ public partial class CrawlerService
 
     private void LogStatus()
     {
-        CrawlerStatus status = new()
-        {
-            MainQueueCount = mainChannel.Reader.Count,
-            RetryQueueCount = retryChannel.Reader.Count,
-            MainThreads = mainConsumers.Count,
-            RetryThreads = retryConsumers.Count,
-            MainStatusCodes = mainStatusCodes.ToDictionary(),
-            RetryStatusCodes = retryStatusCodes.ToDictionary()
-        };
+        CrawlerStatus status = GetCrawlerStatus();
 
         StringBuilder sb = new();
         sb.AppendLine($"{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")}");
@@ -32,9 +24,22 @@ public partial class CrawlerService
         sb.Append(string.Join(Environment.NewLine, status.RetryStatusCodes.Select(s => $"StatusCode {s.Key} - {s.Value}")));
         logger.LogInformation(sb.ToString());
     }
+
+    public CrawlerStatus GetCrawlerStatus()
+    {
+        return new()
+        {
+            MainQueueCount = mainChannel.Reader.Count,
+            RetryQueueCount = retryChannel.Reader.Count,
+            MainThreads = mainConsumers.Count,
+            RetryThreads = retryConsumers.Count,
+            MainStatusCodes = mainStatusCodes.ToDictionary(),
+            RetryStatusCodes = retryStatusCodes.ToDictionary()
+        };
+    }
 }
 
-internal record CrawlerStatus
+public record CrawlerStatus
 {
     public int MainQueueCount { get; set; }
     public int RetryQueueCount { get; set; }

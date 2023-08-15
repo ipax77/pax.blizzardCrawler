@@ -12,12 +12,14 @@ public partial class CrawlerService
         await ss.WaitAsync();
         try
         {
-            if (!await tokenBucketSeconds.UseTokenAsync(cancellationToken))
+            if (tokenBucketSecond is null 
+                || !await tokenBucketSecond.UseTokenAsync(cancellationToken))
             {
                 return new() { StatusCode = 777 };
             }
 
-            if (!await tokenBucketHour.UseTokenAsync(cancellationToken))
+            if (tokenBucketHour is null 
+                || !await tokenBucketHour.UseTokenAsync(cancellationToken))
             {
                 return new() { StatusCode = 778 };
             }

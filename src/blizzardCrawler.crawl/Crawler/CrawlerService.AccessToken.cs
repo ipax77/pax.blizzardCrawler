@@ -6,11 +6,9 @@ namespace blizzardCrawler.crawl.Crawler;
 
 public partial class CrawlerService
 {
-    private SemaphoreSlim ssToken = new(1, 1);
-
     internal async Task<TokenResponse?> GetAccessToken()
     {
-        string memKey = "AccessToken";
+        string memKey = "AccessToken" + apiOptions.ClientId;
 
         await ssToken.WaitAsync();
         try
