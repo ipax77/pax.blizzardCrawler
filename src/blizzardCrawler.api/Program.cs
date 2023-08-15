@@ -63,7 +63,7 @@ if (app.Environment.IsDevelopment())
     var apiOptions = scope.ServiceProvider.GetRequiredService<IOptions<BlizzardAPIOptions>>();
 
     List<PlayerEtagIndex> players = new List<PlayerEtagIndex>();
-    for (int i = 0; i < 10000; i++)
+    for (int i = 0; i < 100000; i++)
     {
         players.Add(new() { ToonId = 1, RegionId = 1, RealmId = 1, Etag = null, LatestMatchInfo = null });
     }
@@ -73,8 +73,8 @@ if (app.Environment.IsDevelopment())
     crawlerService1.MatchInfoReady += HandleIt;
     crawlerService2.MatchInfoReady += HandleIt;
 
-    crawlerService1.StartJob(players.Take(1000).ToList(), apiOptions.Value, tbSecond, tbHour, cts.Token);
-    crawlerService2.StartJob(players.Skip(2000).Take(2000).ToList(), apiOptions.Value, tbSecond, tbHour, cts.Token);
+    crawlerService1.StartJob(players.Take(40000).ToList(), apiOptions.Value, tbSecond, tbHour, cts.Token);
+    crawlerService2.StartJob(players.Skip(40000).Take(40000).ToList(), apiOptions.Value, tbSecond, tbHour, cts.Token);
 
     app.UseSwagger();
     app.UseSwaggerUI();

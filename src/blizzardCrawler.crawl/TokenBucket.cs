@@ -62,6 +62,11 @@ public class TokenBucket : IDisposable
         return true;
     }
 
+    public int CurrentTokens()
+    {
+        return _tokens.Count;
+    }
+
     /// <summary>
     /// Disposes of the resources held by the TokenBucket instance.
     /// </summary>

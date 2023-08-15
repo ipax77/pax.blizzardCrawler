@@ -11,6 +11,11 @@ public partial class CrawlerService
 
     private void LogStatus()
     {
+        if (!logger.IsEnabled(LogLevel.Information))
+        {
+            return;
+        }
+
         CrawlerStatus status = GetCrawlerStatus();
 
         StringBuilder sb = new();
@@ -22,7 +27,8 @@ public partial class CrawlerService
         sb.AppendLine();
         sb.AppendLine("Retry StatusCodes");
         sb.Append(string.Join(Environment.NewLine, status.RetryStatusCodes.Select(s => $"StatusCode {s.Key} - {s.Value}")));
-        logger.LogInformation(sb.ToString());
+
+        logger.LogInformation("{status}", sb.ToString());
     }
 
     public CrawlerStatus GetCrawlerStatus()

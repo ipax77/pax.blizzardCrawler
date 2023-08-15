@@ -114,6 +114,7 @@ public partial class CrawlerService : ICrawlerService
     private async Task<int> HandlePlayer(PlayerEtagIndex player)
     {
         var response = await GetMatchHistory(player);
+        // var response = await MockGetMatchHistory(player);
 
         if (response.StatusCode == 503)
         {
@@ -129,7 +130,10 @@ public partial class CrawlerService : ICrawlerService
         }
         else if (response.StatusCode == 429) // too many requests
         {
-            // await Task.Delay(60000);
+            logger.LogWarning("Too Many Requests (429), SecondTokens: {tokensSecond}, HourTokens: {tokensHour}}",
+                tokenBucketSecond?.CurrentTokens(),
+                tokenBucketHour?.CurrentTokens());
+            await Task.Delay(60000);
             AddRetryPlayer(player);
         }
         else

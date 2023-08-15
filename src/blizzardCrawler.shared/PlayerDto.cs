@@ -44,6 +44,9 @@ public record PlayerEtagIndex
     public int ToonId { get; set; }
     public int RegionId { get; set; }
     public int RealmId { get; set; }
+    /// <summary>
+    /// Etag without W and quotes 
+    /// </summary>
     public string? Etag { get; set; }
     public DateTime? LatestMatchInfo { get; set; }
 
