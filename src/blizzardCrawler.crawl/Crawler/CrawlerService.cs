@@ -136,6 +136,12 @@ public partial class CrawlerService : ICrawlerService
             await Task.Delay(60000);
             AddRetryPlayer(player);
         }
+        else if (response.StatusCode == 401) // Unauthorized
+        {
+            await GetAccessToken(true);
+            logger.LogWarning("Unauthorized request");
+            AddRetryPlayer(player);
+        }
         else
         {
             OnMatchInfoReady(GetMatchInfoResult(player, response));

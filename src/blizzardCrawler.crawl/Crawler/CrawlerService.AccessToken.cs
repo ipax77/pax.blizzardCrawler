@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
@@ -9,7 +10,7 @@ namespace blizzardCrawler.crawl.Crawler;
 
 public partial class CrawlerService
 {
-    internal async Task<TokenResponse?> GetAccessToken()
+    internal async Task<TokenResponse?> GetAccessToken(bool forceRenew = false)
     {
         string memKey = "AccessToken" + apiOptions.ClientId;
 
@@ -34,7 +35,7 @@ public partial class CrawlerService
                 tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
                 if (tokenResponse is not null)
                 {
-                    memoryCache.Set(memKey, tokenResponse, TimeSpan.FromSeconds(tokenResponse.ExpiresIn));
+                    memoryCache.Set(memKey, tokenResponse, TimeSpan.FromSeconds(tokenResponse.ExpiresIn - 60));
                     logger.LogInformation("Access token sucessfully received.");
                 }
             }
