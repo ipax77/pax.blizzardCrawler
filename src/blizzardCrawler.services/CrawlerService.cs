@@ -94,6 +94,7 @@ public partial class CrawlerService
                 {
                     logger.LogInformation("players crawled: {i}", i);
                     playerRepository.LogCrawlStatus(retryChannel.Reader.Count);
+                    await matchRepository.StoreMatches();
                 }
             });
 
@@ -129,8 +130,17 @@ public partial class CrawlerService
         {
             RetryPlayer(player, etag, token);
         }
-        else if (statusCode == 701) // timeout
+        else if (statusCode == 504 || statusCode == 701) // timeout
         {
+            RetryPlayer(player, etag, token);
+        }
+        else if (statusCode == 777 || statusCode == 778) // tokenBucket exceeded
+        {
+            RetryPlayer(player, etag, token);
+        }
+        else if (statusCode == 429) // too many requests
+        {
+            await Task.Delay(60000);
             RetryPlayer(player, etag, token);
         }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -26,7 +27,8 @@ namespace blizzardCrawler.db.Migrations
                     RegionId = table.Column<int>(type: "int", nullable: false),
                     RealmId = table.Column<int>(type: "int", nullable: false),
                     Etag = table.Column<string>(type: "varchar(40)", maxLength: 40, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    LatestMatchInfo = table.Column<DateTime>(type: "datetime(0)", precision: 0, nullable: true)
                 },
                 constraints: table =>
                 {

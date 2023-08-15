@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace blizzardCrawler.db;
 
@@ -18,5 +19,7 @@ public class Player
     public int RealmId { get; set; }
     [MaxLength(40)]
     public string? Etag { get; set; }
+    [Precision(0)]
+    public DateTime? LatestMatchInfo { get; set; }
     public virtual ICollection<MatchInfo> MatchInfos { get; set; }
 }

@@ -30,3 +30,25 @@ public record  PlayerIndex
     public int RegionId { get; set; }
     public int RealmId { get; set; }
 }
+
+public record PlayerEtagIndex
+{
+    public PlayerEtagIndex() {  }
+    public PlayerEtagIndex(PlayerIndex player, string? etag)
+    {
+        ToonId = player.ToonId;
+        RegionId = player.RegionId;
+        RealmId = player.RealmId;
+        Etag = etag;
+    }
+    public int ToonId { get; set; }
+    public int RegionId { get; set; }
+    public int RealmId { get; set; }
+    public string? Etag { get; set; }
+    public DateTime? LatestMatchInfo { get; set; }
+
+    public PlayerIndex GetPlayerIndex()
+    {
+        return new(ToonId, RegionId, RealmId);
+    }
+}

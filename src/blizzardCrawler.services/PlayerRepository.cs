@@ -46,7 +46,18 @@ public partial class PlayerRepository
         if (playersStore.TryGetValue(player, out PlayerCrawlInfo? info)
             && info is not null)
         {
-            return $"'{info.Etag}'";
+            return info.Etag == null ? "NULL" : $"'{info.Etag}'";
+        }
+        return "NULL";
+    }
+
+    public string GetPlayerInsertLatestMatchInfo(PlayerIndex player)
+    {
+        if (playersStore.TryGetValue(player, out PlayerCrawlInfo? info)
+            && info is not null)
+        {
+            return info.LatestMatchInfo == DateTime.MinValue ? "NULL" 
+                : $"'{info.LatestMatchInfo.ToString("yyyy-MM-dd HH:mm:ss")}'";
         }
         return "NULL";
     }
@@ -65,7 +76,7 @@ public partial class PlayerRepository
         return -1;
     }
 
-    public async Task<Dictionary<PlayerIndex, int>> StorePlayers(List<PlayerIndex> players)
+    public async Task<Dictionary<PlayerIndex, int>> StorePlayers_deprecated(List<PlayerIndex> players)
     {
         using var connection = new MySqlConnection(importOptions.Value.ImportConnectionString);
         await connection.OpenAsync();
@@ -116,6 +127,69 @@ public partial class PlayerRepository
         return playerIds;
     }
 
+    public async Task<Dictionary<PlayerIndex, int>> StorePlayers(List<PlayerIndex> players)
+    {
+        using var connection = new MySqlConnection(importOptions.Value.ImportConnectionString);
+        await connection.OpenAsync();
+
+        using var transaction = connection.BeginTransaction();
+        var command = connection.CreateCommand();
+        command.Transaction = transaction;
+
+        int batchSize = 1000;
+
+        int numberOfBatches = (int)Math.Ceiling((double)players.Count / batchSize);
+
+        for (int i = 0; i < numberOfBatches; i++)
+        {
+            var currentBatch = players.Skip(i * batchSize).Take(batchSize).ToList();
+
+            var insertStatement = new StringBuilder();
+            for (int j = 0; j < currentBatch.Count; j++)
+            {
+                var current = currentBatch[j];
+                var etag = GetPlayerInsertEtag(current);
+                var latestMatchInfo = GetPlayerInsertLatestMatchInfo(current);
+                insertStatement.AppendLine($"INSERT INTO {nameof(BlContext.Players)} ({nameof(Player.Name)}, {nameof(Player.ToonId)}, {nameof(Player.RegionId)}, {nameof(Player.RealmId)}, {nameof(Player.Etag)}, {nameof(Player.LatestMatchInfo)}) VALUES");
+                var values = $"('',{current.ToonId},{current.RegionId},{current.RealmId},{etag},{latestMatchInfo})";
+                var updateValues = $"{nameof(Player.Etag)} = {etag}, {nameof(Player.LatestMatchInfo)} = {latestMatchInfo}";
+
+                insertStatement.Append(values);
+                insertStatement.AppendLine($" ON DUPLICATE KEY UPDATE {updateValues};");
+            }
+            command.CommandText = insertStatement.ToString();
+            command.CommandTimeout = 120;
+            await command.ExecuteNonQueryAsync();
+        }
+
+
+        await transaction.CommitAsync();
+
+        using var scope = scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<BlContext>();
+
+        var playerIds = (await context.Players
+            .Select(s => new
+            {
+                s.PlayerId,
+                s.ToonId,
+                s.RegionId,
+                s.RealmId
+            })
+            .ToListAsync())
+            .ToDictionary(k => new PlayerIndex(k.ToonId, k.RegionId, k.RealmId), v => v.PlayerId);
+
+        foreach (var ent in playersStore)
+        {
+            if (playerIds.TryGetValue(ent.Key, out var playerId))
+            {
+                ent.Value.PlayerId = playerId;
+            }
+        }
+
+        return playerIds;
+    }
+
     public void SetCrawlInfo(PlayerIndex player, DateTime latestMatchInfo, string? etag, int statusCode)
     {
         if (playersStore.TryGetValue(player, out var info))
@@ -130,6 +204,11 @@ public partial class PlayerRepository
                     info.TimesBetweenCrawls.Enqueue(info.LatestCrawl - info.LatestSuccessfulCrawl);
                 }
                 info.LatestSuccessfulCrawl = info.LatestCrawl;
+
+                if (statusCode == 200)
+                {
+                    info.Etag = ExtractEtag(etag);
+                }
             }
             else
             {
@@ -144,25 +223,34 @@ public partial class PlayerRepository
             }
             info.CrawlStatusCodes.Enqueue(statusCode);
             info.LatestCrawlStatusCode = statusCode;
-            info.Etag = ExtractEtag(etag);
         }
     }
 
     public async Task<List<PlayerIndex>> GetPlayers()
     {
+        // await UpdatePlayers();
+
         if (playersStore.Count == 0)
         {
-            var players = await GetPlayersFromArcade();
+            // var players = await GetPlayersFromArcade();
             // var players = GetPlayersFromCsv();
+
+            //foreach (var player in players)
+            //{
+            //    playersStore.TryAdd(player, new());
+            //}
+
+            var players = await GetPlayersFromThis();
 
             foreach (var player in players)
             {
-                playersStore.TryAdd(player, new());
+                playersStore.TryAdd(player.GetPlayerIndex(),
+                    new() { Etag = player.Etag, LatestMatchInfo = player.LatestMatchInfo ?? DateTime.MinValue });
             }
         }
 
         return playersStore
-            .OrderBy(o => o.Value.LatestSuccessfulCrawl)
+            .OrderByDescending(o => o.Value.LatestMatchInfo)
             .Select(s => s.Key)
             .ToList();
     }
@@ -170,6 +258,23 @@ public partial class PlayerRepository
     private void RemovePlayer(PlayerIndex player)
     {
         playersStore.TryRemove(player, out var _);
+    }
+
+    private async Task<List<PlayerEtagIndex>> GetPlayersFromThis()
+    {
+        using var scope = scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<BlContext>();
+
+        return await context.Players
+            .Select(s => new PlayerEtagIndex()
+            {
+                ToonId = s.ToonId,
+                RegionId = s.RegionId,
+                RealmId = s.RealmId,
+                Etag = s.Etag,
+                LatestMatchInfo = s.LatestMatchInfo,
+            })
+            .ToListAsync();
     }
 
     private async Task<List<PlayerIndex>> GetPlayersFromArcade()
@@ -245,7 +350,7 @@ public partial class PlayerRepository
             //    .ToList();
 
             StringBuilder sb = new();
-            sb.AppendLine($"retry queue: {retryCount}");
+            sb.AppendLine($"{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")} - retry queue: {retryCount}");
             sb.Append(string.Join(Environment.NewLine, crawlStatusCounts.Select(s => $"StatusCode: {s.CrawlStatusCode} - {s.Count}")));
             if (lastTimesBetweenCrawls.Count > 0)
             {
@@ -268,6 +373,14 @@ public partial class PlayerRepository
 
             File.AppendAllText(importOptions.Value.LogFile, sb.ToString());
         }
+    }
+
+    private async Task UpdatePlayers()
+    {
+        var arcadePlayers = await GetPlayersFromArcade();
+        await StorePlayers(arcadePlayers);
+
+
     }
 
     private static string? ExtractEtag(string? etagString)
