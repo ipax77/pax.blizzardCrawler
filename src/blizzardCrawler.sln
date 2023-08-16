@@ -5,11 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.cli", "blizzardCrawler.cli\blizzardCrawler.cli.csproj", "{F15456B4-97C2-492F-9737-0FBFC7945F51}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.db", "blizzardCrawler.db\blizzardCrawler.db.csproj", "{7C38D1CD-53F8-47D5-9654-BBCADD9C23B7}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.shared", "blizzardCrawler.shared\blizzardCrawler.shared.csproj", "{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.api", "blizzardCrawler.api\blizzardCrawler.api.csproj", "{A44C5CE4-F741-47B7-953E-1699D8B2D62A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.crawl", "blizzardCrawler.crawl\blizzardCrawler.crawl.csproj", "{ECB424AD-F70D-4C10-9275-4C921B2BEC41}"
 EndProject
