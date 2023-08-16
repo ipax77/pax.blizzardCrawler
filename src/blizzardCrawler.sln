@@ -9,11 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.db", "blizz
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.shared", "blizzardCrawler.shared\blizzardCrawler.shared.csproj", "{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.services", "blizzardCrawler.services\blizzardCrawler.services.csproj", "{3CF6E551-D50E-4E04-9176-D4411BB18D90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.api", "blizzardCrawler.api\blizzardCrawler.api.csproj", "{A44C5CE4-F741-47B7-953E-1699D8B2D62A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "blizzardCrawler.api", "blizzardCrawler.api\blizzardCrawler.api.csproj", "{A44C5CE4-F741-47B7-953E-1699D8B2D62A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "blizzardCrawler.crawl", "blizzardCrawler.crawl\blizzardCrawler.crawl.csproj", "{ECB424AD-F70D-4C10-9275-4C921B2BEC41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.crawl", "blizzardCrawler.crawl\blizzardCrawler.crawl.csproj", "{ECB424AD-F70D-4C10-9275-4C921B2BEC41}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,10 +31,6 @@ Global
 		{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3CF6E551-D50E-4E04-9176-D4411BB18D90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3CF6E551-D50E-4E04-9176-D4411BB18D90}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3CF6E551-D50E-4E04-9176-D4411BB18D90}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3CF6E551-D50E-4E04-9176-D4411BB18D90}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A44C5CE4-F741-47B7-953E-1699D8B2D62A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A44C5CE4-F741-47B7-953E-1699D8B2D62A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A44C5CE4-F741-47B7-953E-1699D8B2D62A}.Release|Any CPU.ActiveCfg = Release|Any CPU

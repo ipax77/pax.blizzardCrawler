@@ -11,7 +11,10 @@ public partial class CrawlerService
 
     private void AddRetryPlayer(PlayerEtagIndex player)
     {
-        retryChannel.Writer.TryWrite(player);
+        if (retryChannel.Writer.TryWrite(player))
+        {
+            Interlocked.Increment(ref jobs);
+        }
     }
 
     private void CreateRetryChannelConsumers()

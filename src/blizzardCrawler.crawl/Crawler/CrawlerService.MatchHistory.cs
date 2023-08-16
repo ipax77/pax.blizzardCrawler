@@ -40,7 +40,7 @@ public partial class CrawlerService
             HttpResponseMessage response;
             using (var cts = new CancellationTokenSource(_requestTimeout))
             {
-                using (var request = new HttpRequestMessage(HttpMethod.Get, $"https://{region}.blizzard.com/sc2/legacy/profile/{player.RegionId}/{player.RealmId}/{player.ToonId}/matches"))
+                using (var request = new HttpRequestMessage(HttpMethod.Get, $"https://{region}.blizzard.com/sc2/legacy/profile/{player.RegionId}/{player.RealmId}/{player.ProfileId}/matches"))
                 {
                     request.Headers.Authorization = new("Bearer", token.AccessToken);
                     request.Headers.Accept.Add(new("application/json"));
@@ -155,25 +155,4 @@ public partial class CrawlerService
             ss.Release();
         }
     }
-}
-
-internal record BlMatchRoot
-{
-    public List<BlMatch> Matches { get; set; } = new();
-}
-
-internal record MatchResponse
-{
-    public int StatusCode { get; set; }
-    public List<BlMatch> Matches { get; set; } = new();
-    public string? Etag { get; set; }
-}
-
-internal record BlMatch
-{
-    public string Map { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty;
-    public string Decision { get; set; } = string.Empty;
-    public string Speed { get; set; } = string.Empty;
-    public long Date { get; set; }
 }

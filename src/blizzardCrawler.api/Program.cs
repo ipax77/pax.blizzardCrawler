@@ -46,35 +46,43 @@ builder.Services.AddDbContext<BlContext>(options =>
 builder.Services.AddMemoryCache();
 
 builder.Services.AddTransient<ICrawlerService, CrawlerService>();
+builder.Services.AddScoped<ICrawlerHandler, CrawlerHandler>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-CancellationTokenSource cts = new();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
-    var crawlerService1 = scope.ServiceProvider.GetRequiredService<ICrawlerService>();
-    var crawlerService2 = scope.ServiceProvider.GetRequiredService<ICrawlerService>();
+    var crawlerHandler = scope.ServiceProvider.GetRequiredService<ICrawlerHandler>();
     var apiOptions = scope.ServiceProvider.GetRequiredService<IOptions<BlizzardAPIOptions>>();
+    var context = scope.ServiceProvider.GetRequiredService<BlContext>();
 
-    List<PlayerEtagIndex> players = new List<PlayerEtagIndex>();
-    for (int i = 0; i < 100000; i++)
+    var players = await context.Players
+        .OrderByDescending(o => o.LatestMatchInfo)
+        .Skip(4000)
+        .Take(100)
+        .Select(s => new PlayerEtagIndex()
+        {
+            ProfileId = s.ToonId,
+            RegionId = s.RegionId,
+            RealmId = s.RealmId,
+            Etag = s.Etag,
+            LatestMatchInfo = s.LatestMatchInfo,
+        }).ToListAsync();
+
+    List<MatchInfoResult> results = new();
+    await foreach(var matchInfo in crawlerHandler.GetMatchInfos(players, apiOptions.Value))
     {
-        players.Add(new() { ToonId = 1, RegionId = 1, RealmId = 1, Etag = null, LatestMatchInfo = null });
+        results.Add(matchInfo);
     }
-    TokenBucket tbSecond = new(apiOptions.Value.MaxRequestsPerSecond, 1000, 3000);
-    TokenBucket tbHour = new(apiOptions.Value.MaxRequestsPerHour, 3600000, 60000);
+    var status = crawlerHandler.GetLatestCrawlerStatus();
 
-    crawlerService1.MatchInfoReady += HandleIt;
-    crawlerService2.MatchInfoReady += HandleIt;
-
-    crawlerService1.StartJob(players.Take(40000).ToList(), apiOptions.Value, tbSecond, tbHour, cts.Token);
-    crawlerService2.StartJob(players.Skip(40000).Take(40000).ToList(), apiOptions.Value, tbSecond, tbHour, cts.Token);
+    Console.WriteLine($"results: {results.Count}");
 
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -88,11 +96,3 @@ app.MapControllers();
 
 app.Run();
 
-void HandleIt(object? sender, MatchInfoEventArgs e)
-{
-    Interlocked.Increment(ref j);
-    if (j % 100 == 0)
-    {
-        Console.WriteLine($"j: {j}");
-    }
-}

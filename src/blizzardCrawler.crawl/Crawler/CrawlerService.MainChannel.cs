@@ -16,7 +16,12 @@ public partial class CrawlerService
         {
             return false;
         }
-        return mainChannel.Writer.TryWrite(player);
+        if (mainChannel.Writer.TryWrite(player))
+        {
+            Interlocked.Increment(ref jobs);
+            return true;
+        }
+        return false;
     }
 
     private void AddPlayers(List<PlayerEtagIndex> players)

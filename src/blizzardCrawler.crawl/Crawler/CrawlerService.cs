@@ -18,6 +18,7 @@ public partial class CrawlerService : ICrawlerService
     private BlizzardAPIOptions apiOptions = new();
     private SemaphoreSlim ss;
     private bool started;
+    private int jobs;
 
     public event EventHandler<MatchInfoEventArgs>? MatchInfoReady;
     public event EventHandler? JobDone;
@@ -63,6 +64,7 @@ public partial class CrawlerService : ICrawlerService
         _requestTimeout = TimeSpan.FromSeconds(apiOptions.HttpRequestTimeoutInSeconds);
 
         cancellationToken = token;
+        jobs = players.Count;
         AddPlayers(players);
         _ = StartTickThread();
         started = true;
@@ -81,7 +83,7 @@ public partial class CrawlerService : ICrawlerService
                 LogStatus();
             }
             await Task.Delay(1000);
-            if (mainChannel.Reader.Count == 0 && retryChannel.Reader.Count == 0)
+            if (jobs == 0)
             {
                 OnJobDone(new());
                 if (!apiOptions.KeepRunning)
@@ -146,7 +148,7 @@ public partial class CrawlerService : ICrawlerService
         {
             OnMatchInfoReady(GetMatchInfoResult(player, response));
         }
-
+        Interlocked.Decrement(ref jobs);
         return response.StatusCode;
     }
 
@@ -158,23 +160,8 @@ public partial class CrawlerService : ICrawlerService
         return new()
         {
             Player = player with { Etag = response.Etag, LatestMatchInfo = latestMatchInfo },
-            MatchInfos = response.Matches.Select(s => new MatchDto()
-            {
-                Map = s.Map,
-                MatchDateUnixTimestamp = s.Date,
-                Decision = GetDecision(s.Decision),
-                Region = (Region)player.RegionId
-            }).ToList(),
+            MatchInfos = response.Matches,
             StatusCode = response.StatusCode,
         };
-    }
-
-    private Decision GetDecision(string decisionString)
-    {
-        if (Enum.TryParse(decisionString, out Decision decision))
-        {
-            return decision;
-        }
-        return Decision.None;
     }
 }

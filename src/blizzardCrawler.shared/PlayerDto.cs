@@ -3,15 +3,15 @@
 public record PlayerDto
 {
     public PlayerDto() { }
-    public PlayerDto(int toonId, int regionId, int realmId)
+    public PlayerDto(int profileId, int regionId, int realmId)
     {
-        ToonId = toonId;
+        ProfileId = profileId;
         RegionId = regionId;
         RealmId = realmId;
     }
 
     public int PlayerId { get; set; }
-    public int ToonId { get; set; }
+    public int ProfileId { get; set; }
     public int RegionId { get; set; }
     public int RealmId { get; set; }
 }
@@ -19,14 +19,14 @@ public record PlayerDto
 public record  PlayerIndex
 {
     public PlayerIndex() { }
-    public PlayerIndex(int toonId, int regionId, int realmId)
+    public PlayerIndex(int profileId, int regionId, int realmId)
     {
-        ToonId = toonId;
+        ProfileId = profileId;
         RegionId = regionId;
         RealmId = realmId;
     }
 
-    public int ToonId { get; set; }
+    public int ProfileId { get; set; }
     public int RegionId { get; set; }
     public int RealmId { get; set; }
 }
@@ -36,12 +36,12 @@ public record PlayerEtagIndex
     public PlayerEtagIndex() {  }
     public PlayerEtagIndex(PlayerIndex player, string? etag)
     {
-        ToonId = player.ToonId;
+        ProfileId = player.ProfileId;
         RegionId = player.RegionId;
         RealmId = player.RealmId;
         Etag = etag;
     }
-    public int ToonId { get; set; }
+    public int ProfileId { get; set; }
     public int RegionId { get; set; }
     public int RealmId { get; set; }
     /// <summary>
@@ -52,6 +52,6 @@ public record PlayerEtagIndex
 
     public PlayerIndex GetPlayerIndex()
     {
-        return new(ToonId, RegionId, RealmId);
+        return new(ProfileId, RegionId, RealmId);
     }
 }

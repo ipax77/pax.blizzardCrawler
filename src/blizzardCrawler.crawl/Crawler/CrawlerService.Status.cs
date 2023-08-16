@@ -19,7 +19,7 @@ public partial class CrawlerService
         CrawlerStatus status = GetCrawlerStatus();
 
         StringBuilder sb = new();
-        sb.AppendLine($"{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")}");
+        sb.AppendLine($"{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")} - todo: {status.ToDo}");
         sb.AppendLine($"MainQueue: {status.MainQueueCount} (Threads: {status.MainThreads})");
         sb.AppendLine($"RetryQueue: {status.RetryQueueCount} (Threads: {status.RetryThreads})");
         sb.AppendLine("Main StatusCodes");
@@ -35,6 +35,7 @@ public partial class CrawlerService
     {
         return new()
         {
+            ToDo = jobs,
             MainQueueCount = mainChannel.Reader.Count,
             RetryQueueCount = retryChannel.Reader.Count,
             MainThreads = mainConsumers.Count,
@@ -47,6 +48,7 @@ public partial class CrawlerService
 
 public record CrawlerStatus
 {
+    public int ToDo { get; set; }
     public int MainQueueCount { get; set; }
     public int RetryQueueCount { get; set; }
     public int MainThreads { get; set; }
