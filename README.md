@@ -4,7 +4,7 @@ A .NET project for crawling and retrieving Starcraft II match information from t
 ## Prerequisites
 Before you begin, ensure you have met the following requirements:
 
-.NET SDK 8 preview 7 [link to installation guide](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+.NET 10 SDK [link to installation guide](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 
 Blizzard API Credentials - You need to register your application on the Blizzard Developer Portal to obtain a ClientID and ClientSecret. [link to registration guide](https://develop.battle.net/documentation/guides/getting-started)
 

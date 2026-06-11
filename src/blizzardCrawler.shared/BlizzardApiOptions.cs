@@ -44,6 +44,22 @@ public record BlizzardAPIOptions
     /// Gets or sets the timeout duration for HTTP requests in seconds.
     /// </summary>
     public int HttpRequestTimeoutInSeconds { get; set; } = 10;
+
+    /// <summary>
+    /// Gets or sets the OAuth token endpoint.
+    /// </summary>
+    public string OAuthTokenEndpoint { get; set; } = "https://oauth.battle.net/token";
+
+    /// <summary>
+    /// Gets or sets the regional Blizzard API base URL format. The region is passed as the first format argument.
+    /// </summary>
+    public string ApiBaseUrlFormat { get; set; } = "https://{0}.blizzard.com";
+
+    /// <summary>
+    /// Gets or sets the delay before retrying after a 429 response.
+    /// </summary>
+    public int TooManyRequestsDelayInSeconds { get; set; } = 60;
+
     /// <summary>
     /// True: job lasts till the cancellationToken is canceled. False: stops if all players are processed
     /// </summary>

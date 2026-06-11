@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.shared", "b
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.crawl", "blizzardCrawler.crawl\blizzardCrawler.crawl.csproj", "{ECB424AD-F70D-4C10-9275-4C921B2BEC41}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "blizzardCrawler.crawl.tests", "blizzardCrawler.crawl.tests\blizzardCrawler.crawl.tests.csproj", "{42F28D98-FB3D-4623-A45E-20A77966DA0D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,22 +21,18 @@ Global
 		{F15456B4-97C2-492F-9737-0FBFC7945F51}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F15456B4-97C2-492F-9737-0FBFC7945F51}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F15456B4-97C2-492F-9737-0FBFC7945F51}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7C38D1CD-53F8-47D5-9654-BBCADD9C23B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7C38D1CD-53F8-47D5-9654-BBCADD9C23B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7C38D1CD-53F8-47D5-9654-BBCADD9C23B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7C38D1CD-53F8-47D5-9654-BBCADD9C23B7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF8DEDBD-CFBA-46A8-B942-9C99A39FA074}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A44C5CE4-F741-47B7-953E-1699D8B2D62A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A44C5CE4-F741-47B7-953E-1699D8B2D62A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A44C5CE4-F741-47B7-953E-1699D8B2D62A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A44C5CE4-F741-47B7-953E-1699D8B2D62A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ECB424AD-F70D-4C10-9275-4C921B2BEC41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ECB424AD-F70D-4C10-9275-4C921B2BEC41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ECB424AD-F70D-4C10-9275-4C921B2BEC41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ECB424AD-F70D-4C10-9275-4C921B2BEC41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42F28D98-FB3D-4623-A45E-20A77966DA0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42F28D98-FB3D-4623-A45E-20A77966DA0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42F28D98-FB3D-4623-A45E-20A77966DA0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42F28D98-FB3D-4623-A45E-20A77966DA0D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

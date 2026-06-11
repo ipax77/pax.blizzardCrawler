@@ -14,6 +14,7 @@ public partial class CrawlerService
         if (retryChannel.Writer.TryWrite(player))
         {
             Interlocked.Increment(ref jobs);
+            AddRetryChannelConsumer();
         }
     }
 
@@ -44,18 +45,18 @@ public partial class CrawlerService
 
     private async Task RetryChannelConsumer(CancellationToken token)
     {
-        while (!token.IsCancellationRequested)
+        try
         {
-            if (retryChannel.Reader.TryRead(out PlayerEtagIndex? player)
-                && player is not null)
+            while (await retryChannel.Reader.WaitToReadAsync(token))
             {
-                var statusCode = await HandlePlayer(player);
-                retryStatusCodes.AddOrUpdate(statusCode, 1, (k, v) => ++v);
-            }
-            else
-            {
-                await Task.Delay(1000, token);
+                while (retryChannel.Reader.TryRead(out PlayerEtagIndex? player)
+                    && player is not null)
+                {
+                    var statusCode = await HandlePlayer(player);
+                    retryStatusCodes.AddOrUpdate(statusCode, 1, (k, v) => ++v);
+                }
             }
         }
+        catch (OperationCanceledException) { }
     }
 }

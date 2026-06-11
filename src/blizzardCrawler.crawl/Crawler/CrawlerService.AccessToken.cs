@@ -17,27 +17,29 @@ public partial class CrawlerService
         await ssToken.WaitAsync(cancellationToken);
         try
         {
-            if (!memoryCache.TryGetValue(memKey, out TokenResponse? tokenResponse)
-                || tokenResponse is null)
+            if (!forceRenew && memoryCache.TryGetValue(memKey, out TokenResponse? cachedTokenResponse)
+                && cachedTokenResponse is not null)
             {
-                HttpResponseMessage response;
-                using (var request = new HttpRequestMessage(HttpMethod.Post, "https://oauth.battle.net/token"))
-                {
-                    var authenticationString = $"{apiOptions.ClientId}:{apiOptions.ClientSecret}";
-                    var base64String = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64String);
-                    request.Content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("grant_type", "client_credentials") });
-                    request.Headers.Accept.Add(new("application/json"));
-                    response = await httpClient.SendAsync(request, cancellationToken);
-                }
-                response.EnsureSuccessStatusCode();
+                return cachedTokenResponse;
+            }
 
-                tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
-                if (tokenResponse is not null)
-                {
-                    memoryCache.Set(memKey, tokenResponse, TimeSpan.FromSeconds(tokenResponse.ExpiresIn - 60));
-                    logger.LogInformation("Access token sucessfully received.");
-                }
+            HttpResponseMessage response;
+            using (var request = new HttpRequestMessage(HttpMethod.Post, apiOptions.OAuthTokenEndpoint))
+            {
+                var authenticationString = $"{apiOptions.ClientId}:{apiOptions.ClientSecret}";
+                var base64String = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
+                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64String);
+                request.Content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("grant_type", "client_credentials") });
+                request.Headers.Accept.Add(new("application/json"));
+                response = await httpClient.SendAsync(request, cancellationToken);
+            }
+            response.EnsureSuccessStatusCode();
+
+            var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
+            if (tokenResponse is not null)
+            {
+                memoryCache.Set(memKey, tokenResponse, TimeSpan.FromSeconds(tokenResponse.ExpiresIn - 60));
+                logger.LogInformation("Access token sucessfully received.");
             }
             return tokenResponse;
         }

@@ -1,5 +1,6 @@
 ﻿using blizzardCrawler.shared;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
@@ -28,19 +29,19 @@ public partial class CrawlerService
                 return new() { StatusCode = 778 };
             }
 
-            var token = await GetAccessToken();
-            ArgumentNullException.ThrowIfNull(token);
-
             string? region = GetRegionString(player);
             if (region == null)
             {
                 return new() { StatusCode = 766 };
             }
 
+            var token = await GetAccessToken();
+            ArgumentNullException.ThrowIfNull(token);
+
             HttpResponseMessage response;
             using (var cts = new CancellationTokenSource(_requestTimeout))
             {
-                using (var request = new HttpRequestMessage(HttpMethod.Get, $"https://{region}.blizzard.com/sc2/legacy/profile/{player.RegionId}/{player.RealmId}/{player.ProfileId}/matches"))
+                using (var request = new HttpRequestMessage(HttpMethod.Get, GetMatchHistoryUri(region, player)))
                 {
                     request.Headers.Authorization = new("Bearer", token.AccessToken);
                     request.Headers.Accept.Add(new("application/json"));
@@ -104,6 +105,19 @@ public partial class CrawlerService
         };
     }
 
+    private Uri GetMatchHistoryUri(string region, PlayerEtagIndex player)
+    {
+        var baseUrlFormat = string.IsNullOrWhiteSpace(apiOptions.ApiBaseUrlFormat)
+            ? "https://{0}.blizzard.com"
+            : apiOptions.ApiBaseUrlFormat.TrimEnd('/');
+
+        var baseUrl = baseUrlFormat.Contains("{0}", StringComparison.Ordinal)
+            ? string.Format(CultureInfo.InvariantCulture, baseUrlFormat, region)
+            : $"{baseUrlFormat}/{region}";
+
+        return new Uri($"{baseUrl.TrimEnd('/')}/sc2/legacy/profile/{player.RegionId}/{player.RealmId}/{player.ProfileId}/matches");
+    }
+
     private static string? ExtractEtag(string? etagString)
     {
         if (string.IsNullOrEmpty(etagString))
@@ -117,42 +131,5 @@ public partial class CrawlerService
             return match.Groups[1].Value;
         }
         return null;
-    }
-
-    private async Task<MatchResponse> MockGetMatchHistory(PlayerEtagIndex player)
-    {
-        List<int> possibleReturnCodes = new() { 200, 200, 200, 766, 404, 701, 504, 503, 304 };
-
-        await ss.WaitAsync();
-        try
-        {
-            if (tokenBucketSecond is null
-                || !await tokenBucketSecond.UseTokenAsync(cancellationToken))
-            {
-                return new() { StatusCode = 777 };
-            }
-
-            if (tokenBucketHour is null
-                || !await tokenBucketHour.UseTokenAsync(cancellationToken))
-            {
-                return new() { StatusCode = 778 };
-            }
-            int index = Random.Shared.Next(0, possibleReturnCodes.Count);
-            await Task.Delay(index + 1 * 1);
-            return new() { StatusCode = possibleReturnCodes[index] };
-        }
-        catch (OperationCanceledException)
-        {
-            return new() { StatusCode = 701 };
-        }
-        catch (Exception ex)
-        {
-            logger.LogError("player failed: {error}", ex.Message);
-            return new() { StatusCode = 799 };
-        }
-        finally
-        {
-            ss.Release();
-        }
     }
 }

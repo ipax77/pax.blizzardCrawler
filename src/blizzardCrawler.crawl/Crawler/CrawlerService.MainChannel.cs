@@ -62,18 +62,18 @@ public partial class CrawlerService
 
     private async Task MainChannelConsumer(CancellationToken token)
     {
-        while (!token.IsCancellationRequested)
+        try
         {
-            if (mainChannel.Reader.TryRead(out PlayerEtagIndex? player)
-                && player is not null)
+            while (await mainChannel.Reader.WaitToReadAsync(token))
             {
-                var statusCode = await HandlePlayer(player);
-                mainStatusCodes.AddOrUpdate(statusCode, 1, (k, v) => ++v);
-            }
-            else
-            {
-                await Task.Delay(1000, token);
+                while (mainChannel.Reader.TryRead(out PlayerEtagIndex? player)
+                    && player is not null)
+                {
+                    var statusCode = await HandlePlayer(player);
+                    mainStatusCodes.AddOrUpdate(statusCode, 1, (k, v) => ++v);
+                }
             }
         }
+        catch (OperationCanceledException) { }
     }
 }

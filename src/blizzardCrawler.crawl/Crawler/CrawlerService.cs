@@ -34,18 +34,30 @@ public partial class CrawlerService : ICrawlerService
 
     public CrawlerService(IMemoryCache memoryCache,
                           ILogger<CrawlerService> logger)
+        : this(memoryCache, logger, CreateDefaultHttpClient())
+    {
+    }
+
+    public CrawlerService(IMemoryCache memoryCache,
+                          ILogger<CrawlerService> logger,
+                          HttpClient httpClient)
     {
         this.memoryCache = memoryCache;
         this.logger = logger;
+        this.httpClient = httpClient;
 
+        _requestTimeout = TimeSpan.FromSeconds(Math.Max(1, 10));
+        ss = new(30, 30);
+    }
+
+    private static HttpClient CreateDefaultHttpClient()
+    {
         var handler = new SocketsHttpHandler
         {
             PooledConnectionLifetime = Timeout.InfiniteTimeSpan
         };
 
-        httpClient = new HttpClient(handler);
-        _requestTimeout = TimeSpan.FromSeconds(Math.Max(1, 10));
-        ss = new(30, 30);
+        return new HttpClient(handler);
     }
 
     public void StartJob(List<PlayerEtagIndex> players,
@@ -66,6 +78,7 @@ public partial class CrawlerService : ICrawlerService
         cancellationToken = token;
         jobs = players.Count;
         AddPlayers(players);
+        CreateMainChannelConsumers();
         _ = StartTickThread();
         started = true;
     }
@@ -116,7 +129,6 @@ public partial class CrawlerService : ICrawlerService
     private async Task<int> HandlePlayer(PlayerEtagIndex player)
     {
         var response = await GetMatchHistory(player);
-        // var response = await MockGetMatchHistory(player);
 
         if (response.StatusCode == 503)
         {
@@ -132,10 +144,10 @@ public partial class CrawlerService : ICrawlerService
         }
         else if (response.StatusCode == 429) // too many requests
         {
-            logger.LogWarning("Too Many Requests (429), SecondTokens: {tokensSecond}, HourTokens: {tokensHour}}",
+            logger.LogWarning("Too Many Requests (429), SecondTokens: {tokensSecond}, HourTokens: {tokensHour}",
                 tokenBucketSecond?.CurrentTokens(),
                 tokenBucketHour?.CurrentTokens());
-            await Task.Delay(60000);
+            await Task.Delay(TimeSpan.FromSeconds(apiOptions.TooManyRequestsDelayInSeconds), cancellationToken);
             AddRetryPlayer(player);
         }
         else if (response.StatusCode == 401) // Unauthorized
